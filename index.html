@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Endless Falling Action Fun! – Dodge, Dive & Fall Forever</title>
+    <title>Match 3 Color Puzzle – Match Colors & Clear the Grid</title>
     <style>
         * {
             margin: 0;
@@ -13,337 +13,358 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            background: linear-gradient(165deg, #0a0e1a 0%, #111827 40%, #0f172a 100%);
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+            background: linear-gradient(145deg, #fef3c7 0%, #fde68a 30%, #fbbf24 60%, #f59e0b 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 24px;
             position: relative;
             overflow: hidden;
         }
 
-        body::before {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(ellipse at 20% 30%, rgba(6, 182, 212, 0.15) 0%, transparent 50%),
-                        radial-gradient(ellipse at 80% 70%, rgba(249, 115, 22, 0.12) 0%, transparent 50%),
-                        radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 40%);
-            pointer-events: none;
-            z-index: 0;
+        @keyframes float-tile {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-18px) rotate(8deg); }
         }
 
-        body::after {
-            content: '⬇ 🔥 ⚡ 💨 🌀 ✨';
-            position: absolute;
-            top: 8%;
-            left: 3%;
-            font-size: 42px;
-            opacity: 0.10;
-            pointer-events: none;
-            z-index: 0;
-            letter-spacing: 30px;
-            transform: rotate(-10deg);
+        @keyframes float-tile-alt {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-14px) rotate(-6deg); }
         }
 
-        .sparkle-bg {
-            position: absolute;
-            width: 100%;
-            height: 100%;
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+
+        .bg-tiles {
+            position: fixed;
+            inset: 0;
             pointer-events: none;
             z-index: 0;
             overflow: hidden;
         }
 
-        .sparkle-bg::before {
-            content: '▼ ▽ ▾ ▼ ▽';
+        .bg-tile {
             position: absolute;
-            bottom: 12%;
-            right: 5%;
-            font-size: 36px;
-            opacity: 0.08;
-            letter-spacing: 25px;
-            transform: rotate(12deg);
-            color: #06b6d4;
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            opacity: 0.12;
         }
 
-        @keyframes falling-line {
-            0% { transform: translateY(-100%); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(100vh); opacity: 0; }
-        }
-
-        .fall-lines {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            overflow: hidden;
-        }
-
-        .fall-lines::before,
-        .fall-lines::after {
-            content: '';
-            position: absolute;
-            width: 2px;
-            height: 80px;
-            background: linear-gradient(to bottom, transparent, rgba(6, 182, 212, 0.3), transparent);
-            animation: falling-line 3s linear infinite;
-        }
-
-        .fall-lines::before {
-            left: 15%;
-            animation-delay: 0s;
-        }
-
-        .fall-lines::after {
-            left: 75%;
-            animation-delay: 1.5s;
-        }
+        .bg-tile:nth-child(1) { background: #ef4444; top: 8%; left: 5%; animation: float-tile 4s ease-in-out infinite; }
+        .bg-tile:nth-child(2) { background: #3b82f6; top: 15%; right: 8%; animation: float-tile-alt 5s ease-in-out infinite 0.5s; width: 40px; height: 40px; }
+        .bg-tile:nth-child(3) { background: #22c55e; bottom: 20%; left: 10%; animation: float-tile 4.5s ease-in-out infinite 1s; width: 45px; height: 45px; }
+        .bg-tile:nth-child(4) { background: #a855f7; top: 40%; right: 4%; animation: float-tile-alt 3.8s ease-in-out infinite 0.3s; }
+        .bg-tile:nth-child(5) { background: #f97316; bottom: 10%; right: 15%; animation: float-tile 5.2s ease-in-out infinite 1.5s; width: 38px; height: 38px; }
+        .bg-tile:nth-child(6) { background: #ec4899; top: 65%; left: 3%; animation: float-tile-alt 4.2s ease-in-out infinite 0.8s; width: 42px; height: 42px; }
+        .bg-tile:nth-child(7) { background: #06b6d4; bottom: 35%; right: 6%; animation: float-tile 3.5s ease-in-out infinite 2s; width: 36px; height: 36px; }
+        .bg-tile:nth-child(8) { background: #eab308; top: 5%; left: 45%; animation: float-tile-alt 4.8s ease-in-out infinite 1.2s; width: 44px; height: 44px; }
 
         .container {
-            background: linear-gradient(165deg, rgba(17, 24, 39, 0.95) 0%, rgba(15, 23, 42, 0.98) 50%, rgba(10, 14, 26, 0.95) 100%);
-            border-radius: 28px;
-            border: 2px solid rgba(6, 182, 212, 0.3);
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5),
-                        0 8px 30px rgba(6, 182, 212, 0.08),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.05);
-            max-width: 660px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 32px;
+            box-shadow: 0 20px 60px rgba(245, 158, 11, 0.2),
+                        0 8px 24px rgba(0, 0, 0, 0.06);
+            max-width: 680px;
             width: 100%;
-            padding: 48px;
+            padding: 52px 48px;
             text-align: center;
             position: relative;
             z-index: 1;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        .container:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6),
-                        0 10px 35px rgba(6, 182, 212, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.7);
         }
 
         .game-icon {
-            width: 120px;
-            height: 120px;
+            width: 128px;
+            height: 128px;
             margin: 0 auto 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 58px;
-            background: linear-gradient(145deg, #06b6d4 0%, #8b5cf6 40%, #f97316 80%, #06b6d4 100%);
-            border-radius: 28px;
-            box-shadow: 0 12px 32px rgba(6, 182, 212, 0.35),
-                        inset 0 2px 0 rgba(255, 255, 255, 0.2),
-                        inset 0 -2px 0 rgba(0, 0, 0, 0.2);
-            border: 3px solid rgba(255, 255, 255, 0.15);
-            transform: rotateY(-6deg) rotateX(4deg);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            padding: 14px;
+            background: linear-gradient(145deg, #fff7ed, #ffffff);
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.25),
+                        0 4px 10px rgba(0, 0, 0, 0.05);
+            border: 2px solid rgba(245, 158, 11, 0.2);
             transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
         }
 
         .game-icon:hover {
-            transform: rotateY(0deg) rotateX(0deg) scale(1.08);
+            transform: scale(1.08) rotate(-2deg);
         }
 
+        .mini-tile {
+            border-radius: 7px;
+            aspect-ratio: 1;
+        }
+
+        .mini-tile:nth-child(1) { background: #ef4444; }
+        .mini-tile:nth-child(2) { background: #3b82f6; }
+        .mini-tile:nth-child(3) { background: #22c55e; }
+        .mini-tile:nth-child(4) { background: #a855f7; }
+        .mini-tile:nth-child(5) { background: #f97316; }
+        .mini-tile:nth-child(6) { background: #ec4899; }
+        .mini-tile:nth-child(7) { background: #06b6d4; }
+        .mini-tile:nth-child(8) { background: #eab308; }
+        .mini-tile:nth-child(9) { background: #ef4444; }
+
         h1 {
-            color: #f1f5f9;
-            font-size: 2.1em;
-            margin-bottom: 10px;
+            color: #1c1917;
+            font-size: 2.2em;
+            margin-bottom: 8px;
             font-weight: 800;
             letter-spacing: -0.5px;
         }
 
         h1 .highlight {
-            background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 50%, #f97316 100%);
+            background: linear-gradient(135deg, #ef4444, #f97316, #eab308, #22c55e, #3b82f6, #a855f7);
+            background-size: 200% auto;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            animation: shimmer 4s linear infinite;
         }
 
         .subtitle {
-            color: #06b6d4;
-            font-size: 1.25em;
-            margin-bottom: 28px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        .description {
-            color: #94a3b8;
-            line-height: 1.85;
-            font-size: 1.08em;
-            margin-bottom: 28px;
-            text-align: left;
-        }
-
-        .description strong {
-            color: #e2e8f0;
+            color: #b45309;
+            font-size: 1.2em;
+            margin-bottom: 24px;
             font-weight: 700;
         }
-
-        .features {
-            text-align: left;
-            margin-bottom: 30px;
-        }
-
-        .features h3 {
-            color: #f1f5f9;
-            margin-bottom: 18px;
-            font-size: 1.35em;
-            font-weight: 700;
-        }
-
-        .features ul {
-            list-style: none;
-            padding-left: 0;
-        }
-
-        .features li {
-            color: #94a3b8;
-            padding: 10px 0;
-            padding-left: 36px;
-            position: relative;
-            font-size: 1.05em;
-            line-height: 1.6;
-        }
-
-        .features li::before {
-            content: "⬇";
-            position: absolute;
-            left: 0;
-            font-size: 1.1em;
-        }
-
-        .features li:nth-child(2)::before { content: "⚡"; }
-        .features li:nth-child(3)::before { content: "🔥"; }
-        .features li:nth-child(4)::before { content: "🎯"; }
-        .features li:nth-child(5)::before { content: "🌀"; }
-        .features li:nth-child(6)::before { content: "📱"; }
 
         .info-badges {
             display: flex;
             justify-content: center;
-            gap: 12px;
+            gap: 10px;
             flex-wrap: wrap;
-            margin: 24px 0 8px;
+            margin: 0 0 28px;
         }
 
         .badge {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            background: linear-gradient(135deg, rgba(6, 182, 212, 0.12) 0%, rgba(139, 92, 246, 0.10) 100%);
-            border: 1px solid rgba(6, 182, 212, 0.3);
+            gap: 5px;
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            border: 1.5px solid #fbbf24;
+            border-radius: 22px;
+            padding: 6px 16px;
+            font-size: 0.88em;
+            color: #92400e;
+            font-weight: 700;
+        }
+
+        .description {
+            color: #57534e;
+            line-height: 1.85;
+            font-size: 1.06em;
+            margin-bottom: 32px;
+            text-align: left;
+            background: linear-gradient(135deg, #fffbeb, #fefce8);
+            padding: 22px 26px;
             border-radius: 20px;
-            padding: 6px 14px;
-            font-size: 0.85em;
-            color: #06b6d4;
-            font-weight: 600;
+            border: 1.5px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .description strong {
+            color: #1c1917;
+        }
+
+        .features {
+            text-align: left;
+            margin-bottom: 32px;
+        }
+
+        .features h3 {
+            color: #1c1917;
+            margin-bottom: 18px;
+            font-size: 1.35em;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .feature-card {
+            padding: 18px 20px;
+            border-radius: 18px;
+            border: 1.5px solid;
+            transition: transform 0.25s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .feature-card:nth-child(1) { background: #fef2f2; border-color: #fca5a5; }
+        .feature-card:nth-child(2) { background: #eff6ff; border-color: #93c5fd; }
+        .feature-card:nth-child(3) { background: #f0fdf4; border-color: #86efac; }
+        .feature-card:nth-child(4) { background: #faf5ff; border-color: #c4b5fd; }
+        .feature-card:nth-child(5) { background: #fff7ed; border-color: #fdba74; }
+        .feature-card:nth-child(6) { background: #fdf2f8; border-color: #f9a8d4; }
+
+        .feature-card .icon {
+            font-size: 1.6em;
+            margin-bottom: 6px;
+        }
+
+        .feature-card h4 {
+            color: #1c1917;
+            font-size: 1em;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .feature-card p {
+            color: #78716c;
+            font-size: 0.92em;
+            line-height: 1.5;
         }
 
         .app-store-button {
             display: inline-block;
-            background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 50%, #f97316 100%);
+            background: linear-gradient(135deg, #f97316, #ef4444, #a855f7, #3b82f6);
+            background-size: 300% 100%;
             color: #fff;
-            padding: 16px 38px;
-            border-radius: 16px;
+            padding: 16px 42px;
+            border-radius: 18px;
             text-decoration: none;
             font-size: 1.15em;
-            font-weight: 700;
-            transition: all 0.3s ease;
-            margin-top: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 8px 24px rgba(6, 182, 212, 0.35);
-            letter-spacing: 0.5px;
+            font-weight: 800;
+            transition: all 0.35s ease;
+            border: none;
+            box-shadow: 0 8px 24px rgba(249, 115, 22, 0.35);
+            letter-spacing: 0.3px;
         }
 
         .app-store-button:hover {
             transform: translateY(-3px);
-            box-shadow: 0 12px 32px rgba(139, 92, 246, 0.45);
-            background: linear-gradient(135deg, #f97316 0%, #8b5cf6 50%, #06b6d4 100%);
-            color: #fff;
-        }
-
-        .app-store-button:active {
-            transform: translateY(-1px);
+            box-shadow: 0 14px 32px rgba(239, 68, 68, 0.4);
+            background-position: 100% center;
         }
 
         .footer {
-            margin-top: 30px;
+            margin-top: 32px;
             padding-top: 22px;
-            border-top: 2px solid rgba(6, 182, 212, 0.20);
+            border-top: 2px solid rgba(251, 191, 36, 0.25);
             font-size: 0.95em;
-            color: #64748b;
+            color: #a8a29e;
         }
 
         .footer a {
-            color: #06b6d4;
+            color: #f97316;
             text-decoration: none;
             font-weight: 600;
             transition: color 0.2s;
         }
 
         .footer a:hover {
-            color: #f97316;
+            color: #ef4444;
         }
 
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 1.7em;
-            }
-            .subtitle {
-                font-size: 1.1em;
-            }
-            .container {
-                padding: 28px 20px;
-            }
+        @media (max-width: 640px) {
+            .container { padding: 32px 22px; }
+            h1 { font-size: 1.7em; }
+            .subtitle { font-size: 1.05em; }
+            .feature-grid { grid-template-columns: 1fr; }
+            .game-icon { width: 100px; height: 100px; padding: 10px; }
         }
     </style>
 </head>
 
 <body>
-    <div class="sparkle-bg"></div>
-    <div class="fall-lines"></div>
+    <div class="bg-tiles">
+        <div class="bg-tile"></div>
+        <div class="bg-tile"></div>
+        <div class="bg-tile"></div>
+        <div class="bg-tile"></div>
+        <div class="bg-tile"></div>
+        <div class="bg-tile"></div>
+        <div class="bg-tile"></div>
+        <div class="bg-tile"></div>
+    </div>
+
     <div class="container">
-        <div class="game-icon">🪂</div>
-        <h1>Endless Falling <span class="highlight">Action Fun!</span></h1>
-        <p class="subtitle">Dodge, Dive & Fall Forever!</p>
+        <div class="game-icon">
+            <div class="mini-tile"></div>
+            <div class="mini-tile"></div>
+            <div class="mini-tile"></div>
+            <div class="mini-tile"></div>
+            <div class="mini-tile"></div>
+            <div class="mini-tile"></div>
+            <div class="mini-tile"></div>
+            <div class="mini-tile"></div>
+            <div class="mini-tile"></div>
+        </div>
+
+        <h1>Match 3 <span class="highlight">Color Puzzle</span></h1>
+        <p class="subtitle">Match Colors & Clear the Grid</p>
 
         <div class="info-badges">
             <span class="badge">🆓 Free</span>
-            <span class="badge">🎮 Action</span>
-            <span class="badge">📱 iOS</span>
-            <span class="badge">⚡ Ages 4+</span>
+            <span class="badge">🧩 Puzzle</span>
+            <span class="badge">📱 iOS & iPad</span>
+            <span class="badge">🎯 Ages 4+</span>
         </div>
 
         <div class="description">
-            <p><strong>Get ready for a high-speed free-fall adventure!</strong> Endless Falling Action Fun! drops you into an endless vertical world filled with obstacles, boosts, and heart-pounding action. Tilt, tap, or swipe your way through tight spaces, collect power-ups, and survive as long as you can while falling faster and faster! How far can you fall?</p>
+            <p><strong>Ready to test your color-matching skills?</strong> Match 3 Color Puzzle is a fun and addictive puzzle game where you match colorful tiles to clear the board and score points! Swipe, match, and watch the tiles burst in a cascade of colors. Challenge yourself to beat your high score and clear every grid!</p>
         </div>
 
         <div class="features">
-            <h3>Why You'll Love It</h3>
-            <ul>
-                <li><strong>Endless Free-Fall Action:</strong> Dive into an infinite vertical world where the deeper you fall, the harder it gets — can you beat your high score?</li>
-                <li><strong>Lightning-Fast Reflexes:</strong> Tilt, tap, or swipe to dodge obstacles and navigate through tight gaps at breakneck speed</li>
-                <li><strong>Power-Ups & Boosts:</strong> Collect awesome power-ups that give you shields, speed boosts, and special abilities to survive longer</li>
-                <li><strong>Precision Controls:</strong> Responsive and intuitive controls designed for quick reactions — easy to learn, hard to master</li>
-                <li><strong>Heart-Pounding Challenge:</strong> The speed ramps up the further you fall — stay focused and push your limits every run</li>
-                <li><strong>Play Anywhere:</strong> Available on iPhone, iPad, Mac (Apple Silicon), and Apple Vision — take the thrill wherever you go</li>
-            </ul>
+            <h3>🎮 Why You'll Love It</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="icon">🎨</div>
+                    <h4>Vibrant Color Matching</h4>
+                    <p>Match 3 or more tiles of the same color to clear them from the board and earn points</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🧠</div>
+                    <h4>Strategic Gameplay</h4>
+                    <p>Plan your moves carefully to create chain reactions and massive combos for bonus scores</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🏆</div>
+                    <h4>Beat Your High Score</h4>
+                    <p>Every game is a new challenge — push your limits and climb higher on the leaderboard</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">✨</div>
+                    <h4>Satisfying Effects</h4>
+                    <p>Enjoy beautiful animations and satisfying visual effects every time tiles are cleared</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🔓</div>
+                    <h4>Easy to Learn</h4>
+                    <p>Simple tap and swipe controls that anyone can pick up — perfect for all ages</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">📱</div>
+                    <h4>Play Everywhere</h4>
+                    <p>Available on iPhone, iPad, Mac (Apple Silicon), and Apple Vision Pro</p>
+                </div>
+            </div>
         </div>
 
-        <a href="https://apps.apple.com/us/app/endless-falling-action-fun/id6756492101?uo=4" class="app-store-button" target="_blank" rel="noopener noreferrer">
-             Download on App Store
+        <a href="https://apps.apple.com/us/app/match-3-color-puzzle/id6760045785?uo=4" class="app-store-button" target="_blank" rel="noopener noreferrer">
+            Download on App Store
         </a>
 
         <div class="footer">
-            <p><a href="/privacy.html">Privacy Policy</a> &nbsp;·&nbsp; © Endless Falling Action Fun!</p>
+            <p><a href="/privacy.html">Privacy Policy</a> &nbsp;·&nbsp; © Match 3 Color Puzzle</p>
         </div>
     </div>
 </body>
